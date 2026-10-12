@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAB-21190 — Authorization code</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body class="setup-callback-page">
+  <main class="setup-callback-card">
+    <p class="lab-id">LAB-21190</p>
+    {% if error %}
+    <h1>Authorization was not completed</h1>
+    <p class="placeholder-text">{{ error }}{% if error_description %}: {{ error_description }}{% endif %}</p>
+    <div class="section-toolbar">
+      <button type="button" class="btn btn-primary" id="close-popup">Close window</button>
+    </div>
+    {% elif code %}
+    <h1>Authorization code received</h1>
+    <p>Copy this code into Setup → Integration, then close this window. The lab will exchange it for an access token. Do not share this code.</p>
+    <label class="gv-update-label" for="oauth-code">Authorization code</label>
+    <textarea id="oauth-code" class="gv-modal-input gv-modal-textarea" readonly>{{ code }}</textarea>
+    <div class="section-toolbar">
+      <button type="button" class="btn btn-primary" id="copy-code">Copy code</button>
+      <button type="button" class="btn btn-secondary" id="close-popup">Close window</button>
+    </div>
+    <p class="toolbar-hint" id="copy-status"></p>
+    {% else %}
+    <h1>No authorization code</h1>
+    <p class="placeholder-text">This page is the Redirect URI for the lab integration. After you approve the Webex consent screen, the code appears here.</p>
+    <div class="section-toolbar">
+      <button type="button" class="btn btn-primary" id="close-popup">Close window</button>
+    </div>
+    {% endif %}
+  </main>
+  <script>
+    const code = {{ code | tojson }};
+    if (code && window.opener && window.opener !== window) {
+      try {
+        window.opener.postMessage({ type: "lab21190-oauth-code", code: code }, window.location.origin);
+      } catch (_) { /* opener may already be gone */ }
+    }
+    const copyBtn = document.getElementById("copy-code");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async () => {
+        const field = document.getElementById("oauth-code");
+        const status = document.getElementById("copy-status");
+        try {
+          await navigator.clipboard.writeText(field.value);
+          if (status) status.textContent = "Copied. You can close this window.";
+        } catch (_) {
+          field.select();
+          if (status) status.textContent = "Select the code and copy it manually, then close this window.";
+        }
+      });
+    }
+    document.querySelectorAll("#close-popup").forEach((btn) => {
+      btn.addEventListener("click", () => window.close());
+    });
+  </script>
+</body>
+</html>

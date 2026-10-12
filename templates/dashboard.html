@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAB-21190 — WxCC Custom Dashboard</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <h1>Webex Contact Center — Custom Dashboard Lab</h1>
+      <span class="lab-id">LAB-21190</span>
+      <a class="header-full-dash" href="/dashboard" target="wxccFullDashboard">Open Full Dashboard</a>
+    </div>
+
+    {% if not setup_complete %}
+    <div class="alert alert-warning" id="setup-alert">
+      Complete the <strong>Setup</strong> module to connect with an admin token or a Webex Integration, then your organization ID, before starting the lab modules.
+    </div>
+    {% elif org_id_mismatch %}
+    <div class="alert alert-warning" id="setup-alert">
+      <strong>Org ID mismatch:</strong> configured org is <code>{{ org_id }}</code> but your token belongs to org <code>{{ token_org_id }}</code>.
+      Re-run Setup step 0.2 with matching values.
+    </div>
+    {% else %}
+    <div class="alert alert-success hidden" id="setup-alert"></div>
+    {% endif %}
+
+    <div class="progress-overview">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="overall-progress" style="width: {{ progress.percent }}%"></div>
+      </div>
+      <span class="progress-label" id="overall-label">{{ progress.completed_steps }} / {{ progress.total_steps }} steps complete ({{ progress.percent }}%)</span>
+    </div>
+
+    <nav class="module-nav" id="module-nav">
+      {% for mod in progress.modules if mod.module_id != 'module5' %}
+      <button class="module-tab {% if loop.first %}active{% endif %}" data-module="{{ mod.module_id }}">
+        <span class="module-tab-name">{{ mod.module_name }}</span>
+        {% if mod.total_steps > 0 %}
+        <span class="module-tab-progress">{{ mod.completed_steps }}/{{ mod.total_steps }}</span>
+        {% endif %}
+      </button>
+      {% endfor %}
+    </nav>
+  </header>
+
+  <main class="main">
+    {% for mod in progress.modules if mod.module_id != 'module5' %}
+    <section class="module-panel {% if loop.first %}active{% endif %}" id="panel-{{ mod.module_id }}">
+      <div class="module-lab-area{% if not mod.steps %} hidden{% endif %}">
+        <div class="module-lab-toolbar">
+          <nav class="step-progress" id="step-nav-{{ mod.module_id }}" aria-label="{{ mod.module_name }} steps">
+            {% for step in mod.steps %}
+            <button type="button"
+                    class="step-chip {% if step.complete %}complete{% endif %}"
+                    data-module="{{ mod.module_id }}"
+                    data-step="{{ step.id }}"
+                    title="{{ step.label }}">
+              <span class="step-id">{{ step.id }}</span>
+              <span class="step-label">{{ step.label }}</span>
+            </button>
+            {% endfor %}
+          </nav>
+          <button type="button" class="btn btn-secondary module-reset-btn" data-module="{{ mod.module_id }}"
+                  title="Clear all saved answers for this module">Reset module</button>
+        </div>
+        <div class="step-workspace" id="workspace-{{ mod.module_id }}"></div>
+      </div>
+
+      <div id="unlock-banner-{{ mod.module_id }}" class="unlock-banner hidden"></div>
+
+      <div class="module-content" id="content-{{ mod.module_id }}">
+        {% if mod.module_id == 'module0' %}
+        <div id="setup-status-{{ mod.module_id }}" class="setup-status-panel">
+          <p class="placeholder-text" id="placeholder-{{ mod.module_id }}">
+            Complete the setup steps above to connect the lab to your Webex Contact Center organization.
+          </p>
+        </div>
+        {% else %}
+        <p class="placeholder-text" id="placeholder-{{ mod.module_id }}">
+          Complete the steps above — live API data appears here as you progress.
+        </p>
+        {% endif %}
+      </div>
+    </section>
+    {% endfor %}
+  </main>
+
+  <div id="report-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeReportModal()">
+    <div class="modal-panel modal-panel-wide">
+      <div class="modal-header">
+        <h3 id="report-modal-title">Report Details</h3>
+        <div class="modal-header-actions">
+          <button type="button" id="report-modal-back" class="btn btn-secondary hidden" onclick="backReportModal()">Back</button>
+          <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Close</button>
+        </div>
+      </div>
+      <div id="report-modal-body" class="modal-body modal-body-table"></div>
+    </div>
+  </div>
+
+  <script>
+    window.LAB_PROGRESS = {{ progress | tojson }};
+    window.LAB_SETUP_OAUTH = {{ setup_oauth | tojson }};
+    window.LAB_CONFIG_STATUS = {
+      setup_complete: {{ setup_complete | tojson }},
+      org_id: {{ org_id | tojson }},
+      token_org_id: {{ token_org_id | tojson }},
+      org_id_mismatch: {{ org_id_mismatch | tojson }},
+      token_configured: {{ token_configured | tojson }},
+      org_configured: {{ org_configured | tojson }},
+      auth_method: {{ auth_method | tojson }}
+    };
+  </script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

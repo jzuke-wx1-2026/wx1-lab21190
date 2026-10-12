@@ -1,0 +1,17 @@
+venv/
+.env
+.env.*
+!.env.example
+data/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.idea/
+.vscode/
+*.pem
+*.key
+*.p12
+*.pfx
+lab_credentials.json
+lab_answers.json

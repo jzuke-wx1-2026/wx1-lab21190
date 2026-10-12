@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAB-21190 — Dashboard</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body class="full-dashboard-page">
+  <header class="header header-standalone">
+    <div class="header-top">
+      <h1>Webex Contact Center — Dashboard</h1>
+      <span class="lab-id">LAB-21190</span>
+    </div>
+
+    {% if not setup_complete %}
+    <div class="alert alert-warning" id="setup-alert">
+      Complete the <strong>Setup</strong> module in the lab, then finish a module to unlock dashboard sections.
+    </div>
+    {% elif org_id_mismatch %}
+    <div class="alert alert-warning" id="setup-alert">
+      <strong>Org ID mismatch:</strong> configured org is <code>{{ org_id }}</code> but your token belongs to org <code>{{ token_org_id }}</code>.
+      Re-run Setup step 0.2 with matching values.
+    </div>
+    {% else %}
+    <div class="alert alert-success hidden" id="setup-alert"></div>
+    {% endif %}
+  </header>
+
+  <main class="main">
+    <section class="module-panel active" id="panel-dashboard">
+      <div class="module-content" id="content-dashboard">
+        <p class="placeholder-text" id="placeholder-dashboard">
+          Complete a lab module to add its dashboard section here. Use the info button on each section to see the HTTP method, endpoint, and how the table is built.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <div id="report-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeReportModal()">
+    <div class="modal-panel modal-panel-wide">
+      <div class="modal-header">
+        <h3 id="report-modal-title">Report Details</h3>
+        <div class="modal-header-actions">
+          <button type="button" id="report-modal-back" class="btn btn-secondary hidden" onclick="backReportModal()">Back</button>
+          <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Close</button>
+        </div>
+      </div>
+      <div id="report-modal-body" class="modal-body modal-body-table"></div>
+    </div>
+  </div>
+
+  <script>
+    window.LAB_STANDALONE = true;
+    window.LAB_PROGRESS = {{ progress | tojson }};
+    window.LAB_CONFIG_STATUS = {
+      setup_complete: {{ setup_complete | tojson }},
+      org_id: {{ org_id | tojson }},
+      token_org_id: {{ token_org_id | tojson }},
+      org_id_mismatch: {{ org_id_mismatch | tojson }},
+      token_configured: {{ token_configured | tojson }},
+      org_configured: {{ org_configured | tojson }}
+    };
+  </script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
